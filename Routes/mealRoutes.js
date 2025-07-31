@@ -7,4 +7,5 @@ router.get('/:id', MealController.getMealById);
 router.post('/', MealController.createMeal);
 router.patch('/:id', MealController.updateMeal);
 router.delete('/:id', MealController.deleteMeal);
+router.get('/:id/components', MealController.getMealsComponents);
 module.exports = router;

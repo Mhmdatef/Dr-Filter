@@ -1,14 +1,8 @@
 const handlerFactory = require("./handlerFactoryController");
 const OrderItems = require("../models/orderItemModel");
 const Order = require("../models/orderModel");
-exports.getAllOrders = handlerFactory.getAll(Order, {
-  path: "orderItems",
-  select: "name requestedCalories calculatedTotalWeight price",
-});
-exports.getOrderById = handlerFactory.getOne(Order, {
-  path: "orderItems",
-  select: "name requestedCalories calculatedTotalWeight price",
-});
+exports.getAllOrders = handlerFactory.getAll(Order);
+exports.getOrderById = handlerFactory.getOne(Order);
 exports.createOrder = handlerFactory.createOne(Order);
 exports.updateOrder = handlerFactory.updateOne(Order);
 exports.deleteOrder = handlerFactory.deleteOne(Order);
@@ -24,7 +18,10 @@ exports.getOrderItemsByOrderId = async (req, res) => {
     }
     res.status(200).json({
       status: "success",
-      data: orderItems,
+      data: orderItems.map((item) => ({
+        requestedCalories: item.requestedCalories,
+        price: item.price,
+      })),
     });
   } catch (error) {
     res.status(500).json({

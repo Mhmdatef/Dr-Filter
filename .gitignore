@@ -8,3 +8,4 @@ config.env
 logs/
 *.loga
 
+node_modules

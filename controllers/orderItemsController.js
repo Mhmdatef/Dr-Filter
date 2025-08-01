@@ -1,11 +1,11 @@
 const OrderItems = require("../models/orderItemModel");
 const OrderItemComponent = require("../models/orderItemComponentModel");
+const Order = require("../models/orderModel");
 const orderItemComponentController = require("./orederItemComponentController");
 const Meal = require("../models/mealModel");
 const hanlerfactoryController = require("./handlerFactoryController");
 exports.getAllOrderItems = hanlerfactoryController.getAll(OrderItems);
 exports.updateOrderItem = hanlerfactoryController.updateOne(OrderItems);
-exports.deleteOrderItem = hanlerfactoryController.deleteOne(OrderItems);
 exports.getOrderItemById = async (req, res) => {
   const { orderItemId } = req.params;
   try {
@@ -64,6 +64,25 @@ exports.createOrderItem = async (req, res) => {
     }
     orderItem.calculatedTotalWeight = calculatedTotalWeight;
     await orderItem.save();
+    let totalPrice = 0;
+    const orderItems = await OrderItems.find({ orderId });
+
+    orderItems.forEach((item) => {
+      totalPrice += Number(item.price);
+    });
+    
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Order not found" });
+    }
+    order.items.push(orderItem._id);
+    order.totalPrice = totalPrice;
+
+    await order.save();
     res.status(201).json({
       status: "success",
       data: orderItem,
@@ -91,7 +110,38 @@ exports.getitemCompoents = async (req, res) => {
         ingredientName: component.ingredientName,
         calculatedGrams: component.calculatedGrams,
         calories: component.calories,
+        
       })),
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+exports.removeOrderItem = async (req, res) => {
+  const { orderItemId } = req.params;
+  try {
+    const orderItem = await OrderItems.findByIdAndDelete(orderItemId);
+    if (!orderItem) {
+      return res.status(404).json({
+        status: "error",
+        message: "Order item not found",
+      });
+    }
+    const order = await Order.findById(orderItem.orderId);
+    if (!order) {
+      return res.status(404).json({
+        status: "error",
+        message: "Order not found",
+      });
+    }
+    order.totalPrice -= orderItem.price;
+    await order.save();
+    res.status(204).json({
+      status: "success",
+      message: "Order item deleted successfully",
     });
   } catch (error) {
     res.status(500).json({

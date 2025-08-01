@@ -16,6 +16,14 @@ const orderchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  totalPrice: {
+    type: Number,
+    required: [true, "An order must have a total price"],
+  },
+  items: [{
+    type: Schema.Types.ObjectId,
+    ref: "OrderItem",
+  }]
 });
 
 const Order = mongoose.model("Order", orderchema);

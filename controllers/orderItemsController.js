@@ -9,7 +9,10 @@ exports.updateOrderItem = hanlerfactoryController.updateOne(OrderItems);
 exports.getOrderItemById = async (req, res) => {
   const { orderItemId } = req.params;
   try {
-    const orderItem = await OrderItems.findById(orderItemId);
+    const orderItem = await OrderItems.findById(orderItemId).populate({
+      path: "mealId",
+      select: "name description priceperhundredcalories -_id",
+    })
     if (!orderItem) {
       return res
         .status(404)
